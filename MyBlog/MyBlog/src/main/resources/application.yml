@@ -1,0 +1,9 @@
+spring:
+  profiles:
+    active: dev
+  thymeleaf:
+    mode: HTML
+    cache: false
+
+comment:
+  avatar: /images/nagisa.jpg

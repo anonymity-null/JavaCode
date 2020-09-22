@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<th:block th:fragment="script(item)">
+    <!--semanticUI和jquery的主要js-->
+    <script th:src="@{/js/jquery-3.2.1.min.js}"></script>
+    <script src="https://cdn.jsdelivr.net/semantic-ui/2.2.4/semantic.min.js"></script>
+
+    <!--插件，动态链入插件（若传入的item，不包含某一字符串，则移除掉该标签）-->
+    <!-- 平滑滚动 -->
+    <script th:remove="${!#strings.contains(item,'scroll')}? tag:none" src="//cdn.jsdelivr.net/npm/jquery.scrollto@2.1.2/jquery.scrollTo.min.js"></script>
+    <!-- 代码高亮-->
+    <script th:remove="${!#strings.contains(item,'prism')}? tag:none" th:src="@{/lib/prism/prism.js}"></script>
+    <!-- 目录 -->
+    <script th:remove="${!#strings.contains(item,'tocbot')}? tag:none" th:src="@{/lib/tocbot/tocbot.min.js}"></script>
+    <!-- 自动生成该页面的二维码 -->
+    <script th:remove="${!#strings.contains(item,'qrcode')}? tag:none" th:src="@{/lib/qrcode/qrcode.min.js}"></script>
+    <!-- 滚动侦测 -->
+    <script th:remove="${!#strings.contains(item,'waypoints')}? tag:none" th:src="@{/lib/waypoints/jquery.waypoints.min.js}"></script>
+    <!--Markdown编辑器-->
+    <script th:remove="${!#strings.contains(item,'editormd')}? tag:none" th:src="@{/lib/editormd/editormd.min.js}"></script>
+</th:block>
+</html>

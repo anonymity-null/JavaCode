@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<!--头部信息的公共区域，接收一个参数，用来指定每个页面的标题信息-->
+<head th:fragment="head(title,item)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--用接收的标题参数，替换文本内容-->
+    <title th:text="${title}">xxx</title>
+
+    <!--根据传入的参数，动态链入css文件（若传入的item，不包含某一字符串，则移除掉该标签）-->
+    <link rel="stylesheet" th:href="@{https://cdn.jsdelivr.net/semantic-ui/2.2.4/semantic.min.css}">
+    <!-- 字体排版-->
+    <link rel="stylesheet" th:remove="${!#strings.contains(item,'type')}? tag" th:href="@{/css/typo.css}">
+    <!-- 动画效果-->
+    <link rel="stylesheet" th:remove="${!#strings.contains(item,'animate')}? tag" th:href="@{/css/animate.css}">
+    <!-- 代码高亮-->
+    <link rel="stylesheet" th:remove="${!#strings.contains(item,'prism')}? tag" th:href="@{/lib/prism/prism.css}">
+    <!-- 目录 -->
+    <link rel="stylesheet" th:remove="${!#strings.contains(item,'tocbot')}? tag" th:href="@{/lib/tocbot/tocbot.css}">
+    <!--Markdown编辑器-->
+    <link rel="stylesheet" th:remove="${!#strings.contains(item,'editormd')}? tag" th:href="@{/lib/editormd/css/editormd.min.css}">
+    <!--自定义的css-->
+    <link rel="stylesheet" th:href="@{/css/me.css}">
+</head>
+</html>

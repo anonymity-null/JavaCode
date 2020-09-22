@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{public/head.html::head(title='后台管理',item='')}">
+<body>
+
+<!--导航-->
+<nav th:replace="~{public/admin/navBar_Admin.html::adminNav(item=1)}"></nav>
+
+<div class="ui attached pointing menu">
+    <div class="ui container">
+        <div class="right menu">
+            <a th:href="@{/admin/blogs/input}" class="item">发布</a>
+            <a th:href="@{/admin/blogs}" class="teal active item">列表</a>
+        </div>
+    </div>
+</div>
+
+<!--中间内容-->
+<div class="m-container-small m-padded-tb-big">
+    <div class="ui container">
+
+        <!--提示信息-->
+        <div class="ui success message" th:unless="${#strings.isEmpty(message)}">
+            <i class="close icon"></i>
+            <div class="header">提示：</div>
+            <p th:text="${message}">操作成功!!!</p>
+        </div>
+        <div class="ui error message" th:unless="${#strings.isEmpty(errormessage)}">
+            <i class="close icon"></i>
+            <div class="header">提示：</div>
+            <p th:text="${errormessage}">操作失败!!!</p>
+        </div>
+
+        <!--查询的from表单(使用ajax的方式提交，而不用submit)，当点击搜索按钮时，触发单击事件，发送Ajax请求-->
+        <div class="ui secondary segment form">
+            <input type="hidden" name="page">
+            <div class="inline fields">
+                <div class="field">
+                    <input type="text" name="title" placeholder="标题">
+                </div>
+                <div class="field">
+                    <div class="ui selection dropdown">
+                        <input type="hidden" name="typeId">
+                        <i class="dropdown icon"></i>
+                        <div class="default text">分类</div>
+                        <div class="menu">
+                            <div th:each="type : ${types}" th:data-value="${type.id}" th:text="${type.name}"
+                                 class="item" data-value="1">错误日志
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="ui checkbox">
+                        <input type="checkbox" id="recommend" name="recommend">
+                        <label for="recommend">推荐</label>
+                    </div>
+                </div>
+                <div class="field">
+                    <button type="button" id="search-btn" class="ui mini teal basic button"><i class="search icon"></i>搜索
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!--显示所有的blog信息-->
+        <div id="table-container">
+            <table th:fragment="blogList" class="ui stackable compact teal table">
+
+                <thead class="aligned center">
+                <tr>
+                    <th></th>
+                    <th>标题</th>
+                    <th>类型</th>
+                    <th>推荐</th>
+                    <th>发布状态</th>
+                    <th>更新时间</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!--
+                    遍历page中content中的json数据(存放的是从t_blog表中查询出的数据)  {"id":xxx,"title":xxx,"type":xxx......}
+                -->
+                <tr th:each="blog,iterStat : ${page.content}">
+                    <td th:text="${iterStat.count}">1</td>
+                    <td th:text="${blog.title}">刻意练习清单</td>
+                    <td th:text="${blog.type.name}">认知升级</td>
+                    <td th:text="${blog.recommend}? '是':'否' ">是</td>
+                    <td th:text="${blog.published}? '发布':'草稿' ">草稿</td>
+                    <td th:text="${blog.updateTime}">2017-10-02 09:45</td>
+                    <td>
+                        <!--restful风格  () 中的数据会替换 {} 中的数据-->
+                        <a th:href="@{/admin/blogs/{id}/input(id=${blog.id})}" class="ui mini teal basic button">编辑</a>
+                        <a th:href="@{/admin/blogs/{id}/delete(id=${blog.id})}" class="ui mini red basic button">删除</a>
+                    </td>
+                </tr>
+                </tbody>
+                <tfoot>
+                <tr>
+                    <th colspan="7">
+                        <!--若一共只有一页，则不显示该标签体中内容-->
+                        <div th:if="${page.totalPages}>1" class="ui mini pagination menu">
+                            <!--
+                                上一页：page对象中的number -1
+                                当前页若不是第一页，显示上一页
+                                但是当我们点击后，重新发送请求，并没有把上面表单的查询条件传递给控制器
+                                我们定义一个onclick事件，再设置一个自定义的数据域 data-page
+                                当点击时，将data-page域中的值，传递给（条件搜索from表单）中的隐藏域
+                                提交的是搜索框的from表单中的数据,使用ajax请求，这样可以不用每次重新刷新页面
+                            -->
+                            <a onclick="page(this)" th:attr="data-page=${page.number}-1" th:unless="${page.first}"
+                               class="item">上一页</a>
+                            <!--
+                                下一页：page对象中的number +1
+                                当前页若不是最后一页，显示下一页
+                            -->
+                            <a onclick="page(this)" th:attr="data-page=${page.number}+1" th:unless="${page.last}"
+                               class="item">下一页</a>
+                        </div>
+                        <a th:href="@{/admin/blogs/input}" class="ui mini right floated teal basic button">新增</a>
+                    </th>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+
+<br>
+<br>
+<!--底部footer-->
+<footer th:replace="~{public/footer.html::footer}"></footer>
+
+<!--script引入-->
+<th:block th:replace="~{public/script.html::script(item='')}"></th:block>
+
+<script>
+    $('.menu.toggle').click(function () {
+        $('.m-item').toggleClass('m-mobile-hide');
+    });
+
+    $('.ui.dropdown').dropdown({
+        on: 'hover'
+    });
+
+    //消息提示关闭初始化
+    $('.message .close')
+        .on('click', function () {
+            $(this)
+                .closest('.message')
+                .transition('fade');
+        });
+
+    function page(object) {
+        /*获取条件搜索框的隐藏域，将data-page的值 赋值过去*/
+        $("[name='page']").val($(object).data("page"));
+        sendAjax();
+    }
+
+    $("#search-btn").click(function () {
+        /*
+        * 当点击搜索按钮时，将当前页数清零
+        * 否则当我们在下一页，再点击搜索按钮时
+        * page=1，控制器会查询第2页的数据(没有第二页时，可能为空)，而我们希望的是查询第一页，所以要将当前页数清空
+        * */
+        $("[name='page']").val(0);
+        sendAjax();
+    });
+
+    /*
+        当点击上一页，下一页、搜索按钮时，发送Ajax请求
+        将搜索框的form表单中的数据(title、typeId、recommend、page)提交上去，发送admin/blogs/search请求
+        返回一个页面中的片段 blogList
+    */
+    function sendAjax() {
+        $("#table-container").load(/*[[@{/admin/blogs/search}]]*/"/admin/blogs/search", {
+            title: $("[name='title']").val(),
+            typeId: $("[name='typeId']").val(),
+            recommend: $("[name='recommend']").prop('checked'),
+            page: $("[name='page']").val()
+        });
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{public/head.html::head(title='后台分类页面',item='')}">
+<body>
+
+<!--导航-->
+<nav th:replace="~{public/admin/navBar_Admin.html::adminNav(item=2)}"></nav>
+
+<div class="ui attached pointing menu">
+    <div class="ui container">
+        <div class="right menu">
+            <a th:href="@{/admin/types/input}" class="item">发布</a>
+            <a th:href="@{/admin/types}" class="teal active item">列表</a>
+        </div>
+    </div>
+</div>
+
+<!--中间内容-->
+<div class="m-container-small m-padded-tb-big">
+    <div class="ui container">
+        <!--提示信息-->
+        <div class="ui success message" th:unless="${#strings.isEmpty(message)}">
+            <i class="close icon"></i>
+            <div class="header">提示：</div>
+            <p  th:text="${message}">操作成功!!!</p>
+        </div>
+        <div class="ui error message" th:unless="${#strings.isEmpty(errormessage)}">
+            <i class="close icon"></i>
+            <div class="header">提示：</div>
+            <p  th:text="${errormessage}">操作失败!!!</p>
+        </div>
+
+        <table class="ui celled table stackable compact teal table">
+            <thead>
+            <tr>
+                <th></th>
+                <th>名称</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!--
+                page对象存放的是分页的数据，就是一些json数据
+                content：某一页的所有数据(数据库中的数据)  {"id":xxx,"name":xxx}...
+                number：当前页数
+
+                iterStat：一个索引对象，可以通过该对象的count方法获得索引
+            -->
+            <tr th:each="type,iterStat : ${page.content}">
+                <td th:text="${iterStat.count}">1</td>
+                <td th:text="${type.name}">学习类</td>
+                <td>
+                    <!--restful风格  () 中的数据会替换 {} 中的数据-->
+                    <a th:href="@{/admin/types/{id}/input(id=${type.id})}" class="ui mini teal basic button">编辑</a>
+                    <a th:href="@{/admin/types/{id}/delete(id=${type.id})}" class="ui mini red basic button">删除</a>
+                </td>
+            </tr>
+            </tbody>
+            <tfoot>
+            <tr>
+                <th colspan="6">
+                    <!--若一共只有一页，则不显示该标签体中内容-->
+                    <div th:if="${page.totalPages}>1" class="ui mini pagination menu">
+                        <!--
+                            上一页：page对象中的number -1
+                            当前页若不是第一页，显示上一页
+                        -->
+                        <a th:href="@{/admin/types(page=${page.number}-1)}" th:unless="${page.first}"
+                           class="item">上一页</a>
+                        <!--
+                            下一页：page对象中的number +1
+                            当前页若不是最后一页，显示下一页
+                        -->
+                        <a th:href="@{/admin/types(page=${page.number}+1)}" th:unless="${page.last}"
+                           class="item">下一页</a>
+                    </div>
+                    <a th:href="@{/admin/types/input}" class="ui mini right floated teal basic button">新增</a>
+                </th>
+            </tr>
+            </tfoot>
+        </table>
+
+    </div>
+</div>
+
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<!--底部footer-->
+<footer th:replace="~{public/footer.html::footer}"></footer>
+
+<!--script引入-->
+<th:block th:replace="~{public/script.html::script(item='')}"></th:block>
+
+<script>
+    $('.menu.toggle').click(function () {
+        $('.m-item').toggleClass('m-mobile-hide');
+    });
+
+    $('.ui.dropdown').dropdown({
+        on: 'hover'
+    });
+
+    //消息提示关闭初始化
+    $('.message .close')
+        .on('click', function () {
+            $(this)
+                .closest('.message')
+                .transition('fade');
+        });
+</script>
+</body>
+</html>

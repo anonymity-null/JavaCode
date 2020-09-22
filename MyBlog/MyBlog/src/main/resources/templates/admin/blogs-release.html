@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{public/head.html::head(title='博客发布',item='editormd')}">
+
+<body>
+<!--导航-->
+<nav th:replace="~{public/admin/navBar_Admin.html::adminNav(item=1)}"></nav>
+
+<div class="ui attached pointing menu">
+    <div class="ui container">
+        <div class="right menu">
+            <a th:href="@{/admin/blogs/input}" class="teal active item">发布</a>
+            <a th:href="@{/admin/blogs}" class="item">列表</a>
+        </div>
+    </div>
+</div>
+
+<!--中间内容-->
+<div class="m-container m-padded-tb-big">
+    <div class="ui container">
+
+        <!--该form表单用于在新增页面显示-->
+        <form th:if="${#strings.isEmpty(blog)}" id="blog-form" th:action="@{/admin/blogs/release}" method="post"
+              class="ui form">
+            <!--隐藏域，用来传递该表单是保存还是提交状态-->
+            <input type="hidden" name="published">
+            <div class="required field">
+                <div class="ui left labeled input">
+                    <div class="ui selection compact teal basic dropdown label">
+                        <input type="hidden" value="原创" name="flag">
+                        <i class="dropdown icon"></i>
+                        <div class="text">原创</div>
+                        <div class="menu">
+                            <div class="item" data-value="原创">原创</div>
+                            <div class="item" data-value="转载">转载</div>
+                            <div class="item" data-value="翻译">翻译</div>
+                        </div>
+                    </div>
+                    <input type="text" name="title" placeholder="标题">
+                </div>
+            </div>
+            <!--required：当验证不通过时，该div可以标红-->
+            <div class="required field">
+                <div id="md-content" style="z-index: 1 !important;">
+                    <textarea placeholder="博客内容" name="content" style="display: none"></textarea>
+                </div>
+            </div>
+
+            <div class="two fields">
+                <!--required：当验证不通过时，该div可以标红-->
+                <div class="required field">
+                    <div class="ui left labeled action input">
+                        <label class="ui compact teal basic label">分类</label>
+                        <div class="ui fluid selection dropdown">
+                            <!--
+                                type.id  当提交博客时，将该分类的id也传给controller
+                                请求参数自动绑定，自动将该数据，封装到blog.type.id中
+                            -->
+                            <input type="hidden" name="type.id">
+                            <i class="dropdown icon"></i>
+                            <div class="default text">分类</div>
+                            <div class="menu">
+                                <div th:each="type : ${types}" th:text="${type.getName()}"
+                                     th:data-value="${type.getId()}" class="item" data-value="1">错误日志
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="ui left labeled action input">
+                        <label class="ui compact teal basic label">标签</label>
+                        <div class="ui fluid selection multiple search  dropdown">
+                            <!--
+                                tagIds  当提交博客时，将选中的标签的id也传给controller
+                                controller中，获取到ids，根据所有的id，查询对应的标签，存入blog对象中
+                            -->
+                            <input type="hidden" name="tagIds">
+                            <i class="dropdown icon"></i>
+                            <div class="default text">标签</div>
+                            <div class="menu">
+                                <div th:each="tag : ${tags}" th:data-value="${tag.id}" th:text="${tag.name}"
+                                     class="item" data-value="1">java
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!--required：当验证不通过时，该div可以标红-->
+            <div class="required field">
+                <div class="ui left labeled input">
+                    <label class="ui teal basic label">首图</label>
+                    <input type="text" name="firstPicture" placeholder="首图引用地址">
+                </div>
+
+            </div>
+            <!--博客描述-->
+            <div class="required field">
+                <textarea name="description" maxlength="200" th:placeholder="博客描述..."></textarea>
+            </div>
+
+            <div class="inline fields">
+                <div class="field">
+                    <div class="ui checkbox">
+                        <input type="checkbox" id="recommend" name="recommend" checked class="hidden">
+                        <label for="recommend">推荐</label>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="ui checkbox">
+                        <input type="checkbox" id="shareInfo" name="shareStatement" class="hidden">
+                        <label for="shareInfo">转载声明</label>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="ui checkbox">
+                        <input type="checkbox" id="appreciation" name="appreciation" class="hidden">
+                        <label for="appreciation">赞赏</label>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="ui checkbox">
+                        <input type="checkbox" id="comment" name="commentabled" class="hidden">
+                        <label for="comment">评论</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ui error message"></div>
+
+            <div class="ui right aligned container">
+                <button type="button" class="ui button" onclick="window.history.go(-1)">返回</button>
+                <!--
+                    保存，发布按钮，不能直接提交表单
+                    应该分别设置点击事件，为隐藏域published赋值，表示当前状态为保存，还是发布
+                -->
+                <button type="button" id="save-btn" class="ui secondary button">保存</button>
+                <button type="button" id="publish-btn" class="ui teal button">发布</button>
+            </div>
+        </form>
+
+        <!--该form表单用于在修改页面显示-->
+        <form th:if="${!#strings.isEmpty(blog)}" id="blog-form" th:action="@{/admin/blogs/release}" method="post"
+              class="ui form">
+
+            <!--隐藏域，用来提交该blog对象的id-->
+            <input type="hidden" name="id" th:value="${blog.id}">
+            <!--隐藏域，用来传递该表单是保存还是提交状态-->
+            <input type="hidden" name="published">
+
+            <div class="required field">
+                <div class="ui left labeled input">
+                    <div class="ui selection compact teal basic dropdown label">
+                        <input th:default="原创" type="hidden" value="原创" name="flag" th:value="${blog.flag}">
+                        <i class="dropdown icon"></i>
+                        <div class="text">原创</div>
+                        <div class="menu">
+                            <div class="item" data-value="原创">原创</div>
+                            <div class="item" data-value="转载">转载</div>
+                            <div class="item" data-value="翻译">翻译</div>
+                        </div>
+                    </div>
+                    <input type="text" th:value="${blog.title}" name="title" placeholder="标题">
+                </div>
+            </div>
+            <!--required：当验证不通过时，该div可以标红-->
+            <div class="required field">
+                <div id="md-content" style="z-index: 1 !important;">
+                    <textarea th:text="${blog.content}" placeholder="博客内容" name="content"
+                              style="display: none"></textarea>
+                </div>
+            </div>
+
+            <div class="two fields">
+                <!--required：当验证不通过时，该div可以标红-->
+                <div class="required field">
+                    <div class="ui left labeled action input">
+                        <label class="ui compact teal basic label">分类</label>
+                        <div class="ui fluid selection dropdown">
+                            <!--
+                                type.id  当提交博客时，将该分类的id也传给controller
+                                请求参数自动绑定，自动将该数据，封装到blog.type.id中
+
+                                th:value 用于回显数据，根据id会自动选中对应类型
+                            -->
+                            <input type="hidden" th:value="${blog.type.id}" name="type.id">
+                            <i class="dropdown icon"></i>
+                            <div class="default text">分类</div>
+                            <div class="menu">
+                                <div th:each="type : ${types}" th:text="${type.getName()}"
+                                     th:data-value="${type.getId()}" class="item" data-value="1">错误日志
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="ui left labeled action input">
+                        <label class="ui compact teal basic label">标签</label>
+                        <div class="ui fluid selection multiple search  dropdown">
+                            <!--
+                                tagIds  当提交博客时，将选中的标签的id也传给controller
+                                controller中，获取到ids，根据所有的id，查询对应的标签，存入blog对象中
+                                value=1,2,3 则会选中id为1，2，3的标签
+                            -->
+                            <input type="hidden" name="tagIds" th:value="${blog.tagIds}" value="1,2,3">
+                            <i class="dropdown icon"></i>
+                            <div class="default text">标签</div>
+                            <div class="menu">
+                                <div th:each="tag : ${tags}" th:data-value="${tag.id}" th:text="${tag.name}"
+                                     class="item" data-value="1">java
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!--required：当验证不通过时，该div可以标红-->
+            <div class="required field">
+                <div class="ui left labeled input">
+                    <label class="ui teal basic label">首图</label>
+                    <input type="text" name="firstPicture" th:value="${blog.firstPicture}" placeholder="首图引用地址">
+                </div>
+            </div>
+
+            <!--博客描述-->
+            <div class="required field">
+                <textarea name="description"   maxlength="200" th:text="${blog.description}"></textarea>
+            </div>
+
+            <div class="inline fields">
+                <div class="field">
+                    <div class="ui checkbox">
+                        <input type="checkbox" id="recommend" name="recommend" th:checked="${blog.recommend}" checked
+                               class="hidden">
+                        <label for="recommend">推荐</label>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="ui checkbox">
+                        <input type="checkbox" id="shareInfo" name="shareStatement" th:checked="${blog.shareStatement}"
+                               class="hidden">
+                        <label for="shareInfo">转载声明</label>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="ui checkbox">
+                        <input type="checkbox" id="appreciation" name="appreciation" th:checked="${blog.appreciation}"
+                               class="hidden">
+                        <label for="appreciation">赞赏</label>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="ui checkbox">
+                        <input type="checkbox" id="comment" name="commentabled" th:checked="${blog.commentabled}"
+                               class="hidden">
+                        <label for="comment">评论</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ui error message"></div>
+
+            <div class="ui right aligned container">
+                <button type="button" class="ui button" onclick="window.history.go(-1)">返回</button>
+                <!--
+                    保存，发布按钮，不能直接提交表单
+                    应该分别设置点击事件，为隐藏域published赋值，表示当前状态为保存，还是发布
+                -->
+                <button type="button" id="save-btn" class="ui secondary button">保存</button>
+                <button type="button" id="publish-btn" class="ui teal button">发布</button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+<br>
+<br>
+
+<!--底部footer-->
+<footer th:replace="~{public/footer.html::footer}"></footer>
+
+<!--script引入-->
+<th:block th:replace="~{public/script.html::script(item='editormd')}"></th:block>
+
+
+<script>
+    //初始化Markdown编辑器
+    var contentEditor;
+    $(function () {
+        contentEditor = editormd("md-content", {
+            width: "100%",
+            height: 640,
+            syncScrolling: "single",
+            path: "/lib/editormd/lib/"
+        });
+    });
+    $('.menu.toggle').click(function () {
+        $('.m-item').toggleClass('m-mobile-hide');
+    });
+
+    $('.ui.dropdown').dropdown({
+        on: 'hover'
+    });
+
+    $('.ui.form').form({
+        fields: {
+            title: {
+                identifier: 'title',
+                rules: [{
+                    type: 'empty',
+                    prompt: '请输入博客标题'
+                }]
+            },
+            content: {
+                identifier: 'content',
+                rules: [{
+                    type: 'empty',
+                    prompt: '请输入博客内容'
+                }]
+            },
+            typeId: {
+                identifier: 'typeId',
+                rules: [{
+                    type: 'empty',
+                    prompt: '请输入博客分类'
+                }]
+            },
+            firstPicture: {
+                identifier: 'firstPicture',
+                rules: [{
+                    type: 'empty',
+                    prompt: '请输入博客首图'
+                }]
+            },
+            description: {
+                identifier: 'description',
+                rules: [{
+                    type: 'empty',
+                    prompt: '请输入博客描述'
+                }]
+            },
+        }
+    });
+
+    /*
+        保存，发布按钮设置点击事件
+        分别给隐藏域published赋值，表示当前状态，再提交表单
+    */
+    $('#save-btn').click(function () {
+        $('[name="published"]').val(false);
+        $('#blog-form').submit();
+    });
+    $('#publish-btn').click(function () {
+        $('[name="published"]').val(true);
+        $('#blog-form').submit();
+    });
+
+
+</script>
+</body>
+</html>

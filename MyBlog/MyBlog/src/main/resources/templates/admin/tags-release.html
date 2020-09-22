@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{public/head.html::head(title='标签新增',item='')}">
+<body>
+
+<!--导航-->
+<nav th:replace="~{public/admin/navBar_Admin.html::adminNav(item=3)}"></nav>
+
+<div class="ui attached pointing menu">
+    <div class="ui container">
+        <div class="right menu">
+            <a th:href="@{/admin/tags/input}" class="active item">发布</a>
+            <a th:href="@{/admin/tags}" class="teal  item">列表</a>
+        </div>
+    </div>
+</div>
+
+<!--中间内容（更新与添加共用一个页面，根据有无参数传递，来动态显示form表单）-->
+<div class="m-container-small m-padded-tb-big">
+    <div class="ui container">
+
+        <!--当点击编辑按钮来到该页面时，会传来一个tag对象，用于回显数据，显示该表单-->
+        <form th:if="${!#strings.isEmpty(tag)}" method="post" th:action="@{/admin/tags/update}" class="ui form">
+            <!--隐藏域，用来传递ID-->
+            <input th:value="${tag.getId()}" type="hidden" name="id">
+            <!--required：当验证不通过时，该div可以标红-->
+            <div class="required field">
+                <div class="ui left labeled input">
+                    <label class="ui teal basic label">名称</label>
+                    <!--tag类中的属性也叫name，所以可以请求参数自动封装-->
+                    <!--更新分类和新增分类共用了一个页面，有回显数据时，回显数据-->
+                    <input  type="text" th:placeholder="${tag.getName()}"
+                           name="name" placeholder="标签名称"/>
+                </div>
+            </div>
+
+            <div class="ui error message"></div>
+
+            <div class="ui right aligned container">
+                <button type="button" class="ui button" onclick="window.history.go(-1)">返回</button>
+                <button class="ui teal submit button">提交</button>
+            </div>
+        </form>
+
+        <!--当点击添加按钮来到该页面时，不会传来任何参数，显示该表单-->
+        <form th:if="${#strings.isEmpty(tag)}"  method="post" th:action="@{/admin/tags/release}" class="ui form">
+            <!--required：当验证不通过时，该div可以标红-->
+            <div class="required field">
+                <div class="ui left labeled input">
+                    <label class="ui teal basic label">名称</label>
+                    <!--Tag类中的属性也叫name，所以可以请求参数自动封装-->
+                    <input  type="text" name="name" placeholder="标签名称"/>
+                </div>
+            </div>
+
+            <div class="ui error message"></div>
+
+            <div class="ui right aligned container">
+                <button type="button" class="ui button" onclick="window.history.go(-1)">返回</button>
+                <button class="ui teal submit button">提交</button>
+            </div>
+        </form>
+    </div>
+
+
+</div>
+</div>
+
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<!--底部footer-->
+<footer th:replace="~{public/footer.html::footer}"></footer>
+
+<!--script引入-->
+<th:block th:replace="~{public/script.html::script(item='')}"></th:block>
+
+<script>
+    $('.menu.toggle').click(function () {
+        $('.m-item').toggleClass('m-mobile-hide');
+    });
+
+    $('.ui.dropdown').dropdown({
+        on: 'hover'
+    });
+
+    //消息提示关闭初始化
+    $('.message .close')
+        .on('click', function () {
+            $(this)
+                .closest('.message')
+                .transition('fade');
+        });
+</script>
+</body>
+</html>

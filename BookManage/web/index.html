@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/getXmlhttp.js"></script>
+
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+
+    <style>
+        th{
+            text-align: center;
+        }
+    </style>
+
+    <script>
+        var xmlhttp=getXmlhttp();
+        xmlhttp.open("POST", "StartServlet", true);
+        xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xmlhttp.send();
+
+        xmlhttp.onreadystatechange=function () {
+            var tb = document.getElementById("tb");
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200){
+                var json = xmlhttp.responseText;
+                console.log("一开始：" + json);
+                var toJson = JSON.parse(json);
+                console.log(toJson);
+                for (var i = 0; i < toJson.length; i++) {
+                    tb.appendChild(getRow(toJson[i]));
+                }
+            }
+        }
+        function getRow(toJson) {
+            var row = document.createElement("tr");
+
+            var booknumberCol = document.createElement("th");
+            booknumberCol.innerHTML = toJson.callnumber;
+            row.appendChild(booknumberCol);
+
+            var nameCol = document.createElement("th");
+            nameCol.innerHTML = toJson.name;
+            row.appendChild(nameCol);
+
+            var authorCol = document.createElement("th");
+            authorCol.innerHTML = toJson.author;
+            row.appendChild(authorCol);
+
+            var publishCol = document.createElement("th");
+            publishCol.innerHTML = toJson.publish;
+            row.appendChild(publishCol);
+
+
+            var numCol = document.createElement("th");
+            numCol.innerHTML = toJson.num;
+            row.appendChild(numCol);
+
+            var col=document.createElement("th");
+            if (toJson.num==0){
+                col.innerHTML = "<a href='javascript:void(0)' onclick='doReserve(this)'>预约</a><label>/</label><a href='javascript:void(0)' onclick='doReturn(this)'>还</a>";
+            } else {
+                col.innerHTML = "<a href='javascript:void(0)' onclick='doBorrow(this)'>借</a><label>/</label><a href='javascript:void(0)' onclick='doReturn(this)'>还</a>";
+            }
+            row.appendChild(col);
+
+            return row;
+        }
+
+        function doReserve(node) {
+            var pro = node.parentNode.parentNode;
+            var pros = pro.childNodes;
+
+            var json="callnumber="+pros[0].innerHTML+
+                "&name="+pros[1].innerHTML+
+                "&author="+pros[2].innerHTML+
+                "&publish="+pros[3].innerHTML+
+                "&num="+pros[4].innerHTML;
+
+            xmlhttp.open("POST", "ReserveServlet", true);
+            xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xmlhttp.send(json);
+
+            xmlhttp.onreadystatechange=function(){
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200){
+                    var msg=xmlhttp.responseText;
+                    location.reload()
+
+                    alert(msg)
+                }
+            }
+        }
+
+        function doBorrow(node) {
+            var pro = node.parentNode.parentNode;
+            var pros = pro.childNodes;
+
+            var json="callnumber="+pros[0].innerHTML+
+                    "&name="+pros[1].innerHTML+
+                "&author="+pros[2].innerHTML+
+                "&publish="+pros[3].innerHTML+
+                "&num="+pros[4].innerHTML;
+
+            xmlhttp.open("POST", "BorrowServlet", true);
+            xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xmlhttp.send(json);
+
+            xmlhttp.onreadystatechange=function(){
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200){
+                    var msg=xmlhttp.responseText;
+                    location.reload()
+
+                    alert(msg)
+                }
+            }
+
+            console.log(json);
+        }
+        function doReturn(node) {
+            var pro = node.parentNode.parentNode;
+            var pros = pro.childNodes;
+
+            var json="callnumber="+pros[0].innerHTML+
+                "&name="+pros[1].innerHTML+
+                "&author="+pros[2].innerHTML+
+                "&publish="+pros[3].innerHTML+
+                "&num="+pros[4].innerHTML;
+
+            console.log(json);
+        }
+
+    </script>
+
+
+    <title>图书管理</title>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-8 col-sm-offset-2">
+            <table class="table table-hover">
+
+                <thead>
+                <tr>
+                    <th class="text-center">书目</th>
+                    <th class="text-center">书名</th>
+                    <th class="text-center">作者</th>
+                    <th class="text-center">出版社</th>
+                    <th class="text-center">库存</th>
+                    <th class="text-center">借/还</th>
+                </tr>
+                </thead>
+
+                <tbody id="tb">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>

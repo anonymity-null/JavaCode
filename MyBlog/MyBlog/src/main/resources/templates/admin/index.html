@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{public/head.html::head(title='后台首页',item='')}">
+<body>
+
+<!--导航-->
+<nav th:replace="~{public/admin/navBar_Admin.html::adminNav(item=0)}"></nav>
+
+<!--中间内容-->
+<div class="m-container-small m-padded-tb-big">
+    <div class="ui container">
+        <div class="ui success large  message">
+            <h3>Hi,</h3>
+            <p>戴辰，欢迎登录！</p>
+        </div>
+
+        <img th:src="@{/images/nagisa.jpg}" alt="" class="ui rounded bordered fluid image">
+    </div>
+</div>
+
+<br>
+<br>
+
+<!--底部footer-->
+<footer th:replace="~{public/footer.html::footer}"></footer>
+
+<!--script引入-->
+<th:block th:replace="~{public/script.html::script(item='')}"></th:block>
+
+<script>
+    $('.menu.toggle').click(function () {
+        $('.m-item').toggleClass('m-mobile-hide');
+    });
+
+    $('.ui.dropdown').dropdown({
+        on: 'hover'
+    });
+</script>
+</body>
+</html>

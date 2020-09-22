@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{public/head.html::head(title='标签',item='')}">
+<body>
+
+<!--导航-->
+<nav th:replace="~{public/navBar.html::navBar(3)}"></nav>
+
+<!--中间内容-->
+<div class="m-container-small m-padded-tb-big">
+    <div class="ui container">
+        <!--header-->
+        <div class="ui top attached segment">
+            <div class="ui middle aligned two column grid">
+                <div class="column">
+                    <h3 class="ui teal header">标签</h3>
+                </div>
+                <div class="right aligned column">
+                    共 <h2 th:text="${#arrays.length(tags)}" class="ui orange header m-inline-block m-text-thin">
+                    14 </h2> 个
+                </div>
+            </div>
+        </div>
+
+        <div class="ui attached segment m-padded-tb-large">
+            <a th:each="tag : ${tags}" th:href="@{/tags/{id}(id=${tag.id})}"
+               th:classappend="${activeTagId==tag.id}? 'teal'"
+               class="ui  basic   large label m-margin-tb-tiny">
+                <span th:text="${tag.name}">方法论</span>
+                <div th:if="${#arrays.length(tag.blogs)!=0}" th:text="${#arrays.length(tag.blogs)}" class="detail">23</div>
+            </a>
+        </div>
+
+        <!--博客区域-->
+        <div class="ui top attached teal segment">
+            <div th:each="blog : ${page.content}"
+                 class="ui padded vertical segment m-padded-tb-large m-mobile-lr-clear">
+                <div class="ui mobile reversed stackable grid">
+                    <!--博客描述部分-->
+                    <div class="eleven wide column">
+                        <h3 class="ui header">
+                            <a th:text="${blog.title}" th:href="@{/blog{id}(id=${blog.id})}">标题</a>
+                        </h3>
+                        <p th:text="|${blog.description}......|" class="m-text">
+                            文本内容
+                        </p>
+
+                        <!--博客描述下方的作者信息部分-->
+                        <div class="ui stackable grid">
+                            <div class="row">
+                                <div class="eleven wide column">
+                                    <div class="ui mini horizontal link list">
+                                        <div class="item">
+                                            <!--根据数据库中获取头像信息，昵称，更新日期，访问数量-->
+                                            <img th:src="@{${blog.user.avatar}}"
+                                                 class="ui avatar image">
+                                            <div class="content">
+                                                <a th:text="${blog.user.nickname}" href="#"
+                                                   class="header">戴辰</a>
+                                            </div>
+                                        </div>
+                                        <div class="item">
+                                            <i class="calendar icon"></i> <span
+                                                th:text="${#dates.format(blog.updateTime,'yyyy-MM-dd')}">2017-10-01</span>
+                                        </div>
+                                        <div class="item">
+                                            <i class="eye icon"></i> <span th:text="${blog.views}">2342</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="right aligned five wide column">
+                                    <a href="#" target="_blank" th:text="${blog.type.name}"
+                                       class="ui teal basic label m-padded-tiny m-text-thin">分类名称</a>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="column">
+                                    <a th:each="tag : ${blog.tags}" th:text="${tag.name}"
+                                       th:href="@{/tags/{id}(id=${tag.id})}"
+                                       th:classappend="${activeTagId==tag.id}? 'teal'"
+                                       class="ui  basic left pointing  label m-padded-mini m-text-thin">标签名</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--首图部分-->
+                    <div class="five wide column">
+                        <a th:href="@{/blog/{id}(id=${blog.id})}" target="_blank">
+                            <!--获取数据库中的首图链接-->
+                            <img th:src="@{${blog.firstPicture}}" alt="" class="ui rounded image">
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--上一页,下一页-->
+        <div class="ui bottom attached segment" th:if="${page.totalPages}>1">
+            <div class="ui middle aligned two column grid">
+                <div class="column">
+                    <a th:href="@{'/tags/'+${activeTypeId}(page=${page.number}-1)}" th:unless="${page.first}"
+                       class="ui mini teal basic button">上一页</a>
+                </div>
+                <div class="right aligned column">
+                    <a th:href="@{'/tags/'+${activeTypeId}(page=${page.number}+1)}" th:unless="${page.first}"
+                       class="ui mini teal basic button">下一页</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<br>
+<br>
+
+<!--底部footer-->
+<footer th:replace="~{public/footer.html::footer}"></footer>
+
+<!--script引入-->
+<th:block th:replace="~{public/script.html::script(item='')}"></th:block>
+
+<script>
+    $('.menu.toggle').click(function () {
+        $('.m-item').toggleClass('m-mobile-hide');
+    });
+
+</script>
+</body>
+</html>

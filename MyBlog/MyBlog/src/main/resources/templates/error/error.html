@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{public/head.html::head(title='服务器异常',item='')}">
+<body>
+
+<!--导航-->
+<nav th:replace="~{public/navBar.html::navBar(0)}"></nav>
+
+<br>
+<br>
+<br>
+
+<div class="m-container-small m-padded-tb-massive">
+  <div class="ui error message m-padded-tb-huge" >
+    <div class="ui container">
+      <h2>错误</h2>
+      <p>对不起，服务异常，请联系管理员</p>
+    </div>
+  </div>
+</div>
+<br>
+<br>
+<br>
+<br>
+
+  <div>
+    <!--
+      打印异常信息，以注释的形式，在浏览器的开发者模式中可以见到
+      th:remove-移除html的标签(div就没了)
+      url,exception参数：是通过ControllerExceptionHandler我们自定义的异常类（用于跳转该页面），传递过来的信息
+    -->
+    <div th:utext="'&lt;!--'" th:remove="tag"></div>
+    <div th:utext="'Failed Request URL : ' + ${url}" th:remove="tag"></div>
+    <div th:utext="'Exception message : ' + ${exception.message}" th:remove="tag"></div>
+    <ul th:remove="tag">
+      <li th:each="st : ${exception.stackTrace}" th:remove="tag"><span th:utext="${st}" th:remove="tag"></span></li>
+    </ul>
+    <div th:utext="'--&gt;'" th:remove="tag"></div>
+
+  </div>
+
+<!--footer-->
+<footer th:replace="~{public/footer.html::footer}"></footer>
+</body>
+</html>
